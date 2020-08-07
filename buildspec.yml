@@ -28,10 +28,9 @@ phases:
       - chmod +x ./twistcli
       - echo Scanning with twistcli
       
-      - ./twistcli images scan --details -address $TL_CONSOLE_URL -u $TL_USER -p $TL_PASS $REPOSITORY_URI:$TAG
-
   post_build:
     commands:
+      - ./twistcli images scan --details -address $TL_CONSOLE_URL -u $TL_USER -p $TL_PASS $REPOSITORY_URI:$TAG
       - docker push $REPOSITORY_URI:$TAG
       - CREDENTIALS=$(aws sts assume-role --role-arn $EKS_KUBECTL_ROLE_ARN --role-session-name codebuild-kubectl --duration-seconds 900)
       - export AWS_ACCESS_KEY_ID="$(echo ${CREDENTIALS} | jq -r '.Credentials.AccessKeyId')"
@@ -40,6 +39,7 @@ phases:
       - export AWS_EXPIRATION=$(echo ${CREDENTIALS} | jq -r '.Credentials.Expiration')
       - aws eks update-kubeconfig --name $EKS_CLUSTER_NAME
       - kubectl apply -f hello-k8s.yml
-      - printf '[{"name":"hello-k8s","imageUri":"%s"}]' $REPOSITORY_URI:$TAG > build.json            
+      - printf '[{"name":"hello-k8s","imageUri":"%s"}]' $REPOSITORY_URI:$TAG > build.json    
+      
 artifacts:
   files: build.json
