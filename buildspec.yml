@@ -1,5 +1,13 @@
 ---
 version: 0.2
+
+TL_USER:  jasmison@amazon.com
+# The Twistlock user with the CI User role
+TL_PASS:  Twistitup7!
+# The password for this user account
+TL_CONSOLE_URL:  http://console.<my_company>.com:8083
+# The base URL for the console -- http://console.<my_company>.com:8083 -- without a trailing /
+
 phases:
   install:
     commands:
@@ -29,5 +37,14 @@ phases:
       - aws eks update-kubeconfig --name $EKS_CLUSTER_NAME
       - kubectl apply -f hello-k8s.yml
       - printf '[{"name":"hello-k8s","imageUri":"%s"}]' $REPOSITORY_URI:$TAG > build.json
+      
+      - echo Build completed on `date`
+      - echo Downloading twistcli
+      - curl -k -u $TL_USER:$TL_PASS --output ./twistcli $TL_CONSOLE_URL/api/v1/util/twistcli
+      - chmod +x ./twistcli
+      - echo Scanning with twistcli
+      
+      - ./twistcli images scan --details -address $TL_CONSOLE_URL -u $TL_USER -p $TL_PASS $REPOSITORY_URI:$TAG
+            
 artifacts:
   files: build.json
