@@ -16,3 +16,6 @@ USER app
 
 EXPOSE 8080
 CMD ["/main"]
+
+
+FROM php:5.6-fpm
